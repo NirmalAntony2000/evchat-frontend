@@ -19,40 +19,41 @@
     <input type="text" id="userInput" placeholder="Type a message..." />
   </div>
 
-  <script>
-    const userInput = document.getElementById("userInput");
-    const messages = document.getElementById("messages");
+ <script>
+  const userInput = document.getElementById("userInput");
+  const messages = document.getElementById("messages");
 
-    userInput.addEventListener("keypress", async function(e) {
-      if (e.key === "Enter" && userInput.value.trim()) {
-        const text = userInput.value;
-        appendMessage("user", text);
-        userInput.value = "";
+  userInput.addEventListener("keypress", async function(e) {
+    if (e.key === "Enter" && userInput.value.trim()) {
+      const text = userInput.value;
+      appendMessage("user", text);
+      userInput.value = "";
 
-        const res = await fetch("https://evatchatbot-production.up.railway.app/webhook", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            queryResult: {
-              intent: { displayName: "DetectIntent" },
-              parameters: { text }
-            },
-            session: "projects/evchatbot/sessions/123456"
-          })
-        });
+      const res = await fetch("https://evatchatbot-production.up.railway.app/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          queryResult: {
+            intent: { displayName: "FindCharger" },
+            parameters: { "geo-city": text }
+          },
+          session: "projects/demo/sessions/abc123"
+        })
+      });
 
-        const data = await res.json();
-        appendMessage("bot", data.fulfillmentText || "No response");
-      }
-    });
-
-    function appendMessage(sender, text) {
-      const div = document.createElement("div");
-      div.className = "message " + sender;
-      div.textContent = text;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
+      const data = await res.json();
+      appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
     }
-  </script>
+  });
+
+  function appendMessage(sender, text) {
+    const div = document.createElement("div");
+    div.className = "message " + sender;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+</script>
+
 </body>
 </html>
