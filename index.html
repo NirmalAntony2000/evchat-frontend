@@ -16,7 +16,7 @@
   <div id="chat">
     <h2>EV Charging Chatbot</h2>
     <div id="messages"></div>
-    <input type="text" id="userInput" placeholder="Type a message..." />
+    <input type="text" id="userInput" placeholder="Type a suburb, charger name, or amenity..." />
   </div>
 
   <script>
@@ -25,7 +25,7 @@
 
     // Show welcome message on load
     window.onload = function () {
-      appendMessage("bot", "👋 Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
+      appendMessage("bot", " Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
     };
 
     userInput.addEventListener("keypress", function(e) {
@@ -42,9 +42,11 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          queryResult: {
-            intent: { displayName: "FindCharger" },
-            parameters: { "geo-city": text }
+          queryInput: {
+            text: {
+              text: text,
+              languageCode: "en"
+            }
           },
           session: "projects/demo/sessions/abc123"
         })
@@ -61,11 +63,8 @@
       )?.quickReplies?.quickReplies || [];
 
       quickReplies.forEach(reply => {
-        appendMessage("bot", `👉 ${reply}`);
+        appendMessage("bot", ` ${reply}`);
       });
-
-      // Display thank you message
-      appendMessage("bot", "🙏 Thanks for using the EV Charging Assistant!");
     }
 
     function appendMessage(sender, text) {
