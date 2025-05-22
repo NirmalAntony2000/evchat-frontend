@@ -23,6 +23,11 @@
     const userInput = document.getElementById("userInput");
     const messages = document.getElementById("messages");
 
+    // Show welcome message on load
+    window.onload = function () {
+      appendMessage("bot", "👋 Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
+    };
+
     userInput.addEventListener("keypress", function(e) {
       if (e.key === "Enter" && userInput.value.trim()) {
         const text = userInput.value;
@@ -58,6 +63,9 @@
       quickReplies.forEach(reply => {
         appendMessage("bot", `👉 ${reply}`);
       });
+
+      // Display thank you message
+      appendMessage("bot", "🙏 Thanks for using the EV Charging Assistant!");
     }
 
     function appendMessage(sender, text) {
