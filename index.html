@@ -57,7 +57,7 @@
 
       if (["cafes", "restrooms", "convenience stores"].includes(lower)) {
         intent = "SelectAmenityType";
-      } else if (!isNaN(lower.charAt(0))) {
+      } else if (text.includes("–")) {
         intent = "SelectCharger";
       }
 
@@ -80,10 +80,10 @@
 
       const data = await res.json();
 
-      // Display main bot response
+      // Display main bot message
       appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
 
-      // Display quick replies as clickable buttons
+      // Show quick replies as clickable buttons
       const quickReplies = data.fulfillmentMessages?.find(
         m => m.quickReplies && m.quickReplies.quickReplies
       )?.quickReplies?.quickReplies || [];
