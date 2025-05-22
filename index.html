@@ -19,65 +19,71 @@
     <input type="text" id="userInput" placeholder="Type a suburb, charger name, or amenity..." />
   </div>
 
- <script>
-  const userInput = document.getElementById("userInput");
-  const messages = document.getElementById("messages");
+  <script>
+    const userInput = document.getElementById("userInput");
+    const messages = document.getElementById("messages");
 
-  window.onload = function () {
-    appendMessage("bot", "👋 Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
-  };
+    // Show welcome message on load
+    window.onload = function () {
+      appendMessage("bot", "👋 Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
+    };
 
-  userInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter" && userInput.value.trim()) {
-      const text = userInput.value;
-      appendMessage("user", text);
-      sendToBot(text);
-      userInput.value = "";
+    userInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter" && userInput.value.trim()) {
+        const text = userInput.value.trim();
+        appendMessage("user", text);
+        sendToBot(text);
+        userInput.value = "";
+      }
+    });
+
+    async function sendToBot(text) {
+      let intent = "FindCharger";
+      const lower = text.toLowerCase();
+
+      if (["cafes", "restrooms", "convenience stores"].includes(lower)) {
+        intent = "SelectAmenityType";
+      } else if (!isNaN(lower.charAt(0))) {
+        intent = "SelectCharger";
+      }
+
+      const res = await fetch("https://evatchatbot-production.up.railway.app/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          queryResult: {
+            queryText: text,
+            intent: { displayName: intent },
+            parameters: {
+              "geo-city": text,
+              "amenity_type": text
+            },
+            outputContexts: []
+          },
+          session: "projects/demo/sessions/abc123"
+        })
+      });
+
+      const data = await res.json();
+
+      appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
+
+      const quickReplies = data.fulfillmentMessages?.find(
+        m => m.quickReplies && m.quickReplies.quickReplies
+      )?.quickReplies?.quickReplies || [];
+
+      quickReplies.forEach(reply => {
+        appendMessage("bot", `👉 ${reply}`);
+      });
     }
-  });
 
-  async function sendToBot(text) {
-    const res = await fetch("https://evatchatbot-production.up.railway.app/webhook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        queryResult: {
-          queryText: text,
-          parameters: {
-            "geo-city": text,
-            "amenity_type": text
-          },
-          intent: {
-            displayName: ""  
-          },
-          outputContexts: []
-        },
-        session: "projects/demo/sessions/abc123"
-      })
-    });
-
-    const data = await res.json();
-
-    appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
-
-    const quickReplies = data.fulfillmentMessages?.find(
-      m => m.quickReplies && m.quickReplies.quickReplies
-    )?.quickReplies?.quickReplies || [];
-
-    quickReplies.forEach(reply => {
-      appendMessage("bot", ` ${reply}`);
-    });
-  }
-
-  function appendMessage(sender, text) {
-    const div = document.createElement("div");
-    div.className = "message " + sender;
-    div.textContent = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
-</script>
-
+    function appendMessage(sender, text) {
+      const div = document.createElement("div");
+      div.className = "message " + sender;
+      div.textContent = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+  </script>
 </body>
 </html>
-
