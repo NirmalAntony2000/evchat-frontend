@@ -9,6 +9,20 @@
     .message { margin: 10px 0; }
     .user { text-align: right; color: blue; }
     .bot { text-align: left; color: green; }
+    .reply-button {
+      display: inline-block;
+      margin: 4px 4px 4px 0;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      color: #333;
+      font-size: 14px;
+    }
+    .reply-button:hover {
+      background-color: #e0e0e0;
+    }
     input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 4px; border: 1px solid #ccc; }
   </style>
 </head>
@@ -66,14 +80,24 @@
 
       const data = await res.json();
 
+      // Display main bot response
       appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
 
+      // Display quick replies as clickable buttons
       const quickReplies = data.fulfillmentMessages?.find(
         m => m.quickReplies && m.quickReplies.quickReplies
       )?.quickReplies?.quickReplies || [];
 
       quickReplies.forEach(reply => {
-        appendMessage("bot", `👉 ${reply}`);
+        const button = document.createElement("button");
+        button.className = "reply-button";
+        button.textContent = reply;
+        button.onclick = () => {
+          appendMessage("user", reply);
+          sendToBot(reply);
+        };
+        messages.appendChild(button);
+        messages.scrollTop = messages.scrollHeight;
       });
     }
 
