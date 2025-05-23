@@ -30,14 +30,17 @@
   <div id="chat">
     <h2>EV Charging Chatbot</h2>
     <div id="messages"></div>
-    <input type="text" id="userInput" placeholder="Type a suburb, charger name, or amenity..." />
+    <input type="text" id="userInput" placeholder="Type a suburb, charger, or amenity..." />
   </div>
 
   <script>
     const userInput = document.getElementById("userInput");
     const messages = document.getElementById("messages");
 
-    // Show welcome message on load
+    // Unique session per user
+    const sessionId = "projects/demo/sessions/" + Math.random().toString(36).substring(7);
+
+    // Show welcome message
     window.onload = function () {
       appendMessage("bot", "👋 Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
     };
@@ -52,38 +55,24 @@
     });
 
     async function sendToBot(text) {
-      let intent = "FindCharger";
-      const lower = text.toLowerCase();
-
-      if (["cafes", "restrooms", "convenience stores"].includes(lower)) {
-        intent = "SelectAmenityType";
-      } else if (text.includes("–")) {
-        intent = "SelectCharger";
-      }
-
       const res = await fetch("https://evatchatbot-production.up.railway.app/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           queryResult: {
             queryText: text,
-            intent: { displayName: intent },
             parameters: {
               "geo-city": text,
               "amenity_type": text
-            },
-            outputContexts: []
+            }
           },
-          session: "projects/demo/sessions/abc123"
+          session: sessionId
         })
       });
 
       const data = await res.json();
-
-      // Display main bot message
       appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
 
-      // Show quick replies as clickable buttons
       const quickReplies = data.fulfillmentMessages?.find(
         m => m.quickReplies && m.quickReplies.quickReplies
       )?.quickReplies?.quickReplies || [];
