@@ -63,11 +63,11 @@ frontend
       )?.quickReplies?.quickReplies || [];
 
       quickReplies.forEach(reply => {
-        appendMessage("bot", 👉 ${reply});
+        appendMessage("bot",  ${reply});
       });
 
       // Display thank you message
-      appendMessage("bot", "🙏 Thanks for using the EV Charging Assistant!");
+      appendMessage("bot", " Thanks for using the EV Charging Assistant!");
     }
 
     function appendMessage(sender, text) {
