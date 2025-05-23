@@ -1,3 +1,5 @@
+frontend 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,20 +11,6 @@
     .message { margin: 10px 0; }
     .user { text-align: right; color: blue; }
     .bot { text-align: left; color: green; }
-    .reply-button {
-      display: inline-block;
-      margin: 4px 4px 4px 0;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: #f0f0f0;
-      cursor: pointer;
-      color: #333;
-      font-size: 14px;
-    }
-    .reply-button:hover {
-      background-color: #e0e0e0;
-    }
     input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 4px; border: 1px solid #ccc; }
   </style>
 </head>
@@ -30,23 +18,21 @@
   <div id="chat">
     <h2>EV Charging Chatbot</h2>
     <div id="messages"></div>
-    <input type="text" id="userInput" placeholder="Type a suburb, charger, or amenity..." />
+    <input type="text" id="userInput" placeholder="Type a message..." />
   </div>
 
   <script>
     const userInput = document.getElementById("userInput");
     const messages = document.getElementById("messages");
 
-    // Stable session ID for maintaining context
-    const sessionId = "projects/demo/sessions/" + Math.random().toString(36).substring(2);
-
+    // Show welcome message on load
     window.onload = function () {
       appendMessage("bot", "👋 Welcome! I’m your EV Charging Assistant. Let me know your suburb and I’ll find nearby chargers and amenities.");
     };
 
-    userInput.addEventListener("keypress", function (e) {
+    userInput.addEventListener("keypress", function(e) {
       if (e.key === "Enter" && userInput.value.trim()) {
-        const text = userInput.value.trim();
+        const text = userInput.value;
         appendMessage("user", text);
         sendToBot(text);
         userInput.value = "";
@@ -59,34 +45,29 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           queryResult: {
-            queryText: text,
-            parameters: {
-              "geo-city": text,
-              "amenity_type": text
-            }
+            intent: { displayName: "FindCharger" },
+            parameters: { "geo-city": text }
           },
-          session: sessionId
+          session: "projects/demo/sessions/abc123"
         })
       });
 
       const data = await res.json();
+
+      // Display main bot message
       appendMessage("bot", data.fulfillmentText || "No response from chatbot.");
 
+      // Show quick replies if available
       const quickReplies = data.fulfillmentMessages?.find(
         m => m.quickReplies && m.quickReplies.quickReplies
       )?.quickReplies?.quickReplies || [];
 
       quickReplies.forEach(reply => {
-        const button = document.createElement("button");
-        button.className = "reply-button";
-        button.textContent = reply;
-        button.onclick = () => {
-          appendMessage("user", reply);
-          sendToBot(reply);
-        };
-        messages.appendChild(button);
-        messages.scrollTop = messages.scrollHeight;
+        appendMessage("bot", 👉 ${reply});
       });
+
+      // Display thank you message
+      appendMessage("bot", "🙏 Thanks for using the EV Charging Assistant!");
     }
 
     function appendMessage(sender, text) {
